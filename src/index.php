@@ -1,4 +1,4 @@
-
+<?php echo phpinfo(); ?>
 <!doctype html>
 <html lang="en">
   <head>

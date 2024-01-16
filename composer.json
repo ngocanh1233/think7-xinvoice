@@ -13,7 +13,7 @@
     ],
     "require": {
         "horstoeko/zugferd": "^1",
-        "php": "^8.0.2",
+        "php": "^8.1.2",
         "setasign/fpdf": "^1.8",
         "setasign/fpdi": "^2.3"
     }

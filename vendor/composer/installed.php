@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'pc/invoice',
-        'pretty_version' => '1.0.0+no-version-set',
-        'version' => '1.0.0.0',
-        'reference' => NULL,
+        'pretty_version' => 'dev-master',
+        'version' => 'dev-master',
+        'reference' => '3050ea3d17c122d5891768438c40fbb332b8ad03',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -101,9 +101,9 @@
             'dev_requirement' => false,
         ),
         'pc/invoice' => array(
-            'pretty_version' => '1.0.0+no-version-set',
-            'version' => '1.0.0.0',
-            'reference' => NULL,
+            'pretty_version' => 'dev-master',
+            'version' => 'dev-master',
+            'reference' => '3050ea3d17c122d5891768438c40fbb332b8ad03',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

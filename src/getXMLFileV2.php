@@ -1,6 +1,7 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', '1');
+error_reporting( 1 );
+ini_set( 'display_errors', true );
+
 use horstoeko\zugferd\ZugferdDocumentBuilder;
 use horstoeko\zugferd\ZugferdDocumentPdfBuilder;
 use horstoeko\zugferd\ZugferdProfiles;
@@ -42,7 +43,12 @@ $dFzu_TotalTax = $_POST['dFzu_TotalTax'];
 $dt_Land = $_POST['dt_Land'];
 $dt_CodeInvoice = $_POST['dt_CodeInvoice'];
 $dd_due_date_Invoice_amount = $_POST['dd_due_date_Invoice_amount'];
-$dz_Tax = $_POST['dz_Tax'];
+$dz_Tax = $_POST['dz_Tax'] == '' ? 0.0 : $_POST['dz_Tax'];
+$dz_Sum_Allowance = $_POST['dz_Sum_Allowance'];
+$dz_Deposit_percent = $_POST['dz_depositPercent'] == '' ? 0.0 : $_POST['dz_depositPercent'];
+$dz_Deposit_Total = $_POST['dz_depositTotal'] == '' ? 0.0 : $_POST['dz_depositTotal'];
+
+$dEt_VAT_Type = $_POST['dEt_VAT_Type'];
 
 $dataJSON = str_replace("'", "",$_POST['dt_Json']);
 
@@ -74,9 +80,13 @@ $document->setDocumentBuyer($dt_Name_recipien, null);
 $document->setDocumentBuyerReference($dz_Purchaser_Order_reference);
 $document->setDocumentBuyerAddress($dt_recipien_address, $dt_additional_address, "", $dt_recipien_PLZ, $dt_recipien_city, $dt_Land);
 $document->setDocumentBuyerContact($dt_Name_recipien, "", "", $dt_recipien_tele, "", $dt_recipien_Email);
-$document->addDocumentTax("S", "VAT", $dFzu_Price_Discount_percent, $dFzu_TotalTax, $dz_Tax);
-$document->addDocumentAllowanceCharge($dFzu_SumRabatt, false, "S", "VAT", $dz_Tax, null, $dz_Rabatt, $dFzu_SumBeforeTax);
-$document->setDocumentSummation($dFzu_TotalPrice, $dFzu_TotalPrice , $dFzu_SumBeforeTax, 0.0, $dFzu_SumRabatt, $dFzu_Price_Discount_percent, $dFzu_TotalTax, null,$dz_Amount_already_paid);
+$document->addDocumentTax($dEt_VAT_Type, "VAT", $dFzu_Price_Discount_percent, $dFzu_TotalTax, $dz_Tax);
+$document->addDocumentAllowanceCharge($dFzu_SumRabatt, false, $dEt_VAT_Type, "VAT", $dz_Tax, null, $dz_Rabatt, $dFzu_SumBeforeTax);
+$document->addDocumentAllowanceCharge($dz_Deposit_Total, false, $dEt_VAT_Type, "VAT", $dz_Tax, null, $dz_Deposit_percent, $dFzu_SumBeforeTax);
+$document->setDocumentSummation($dFzu_TotalPrice, $dFzu_TotalPrice , $dFzu_SumBeforeTax, 0.0, $dz_Sum_Allowance, $dFzu_Price_Discount_percent, $dFzu_TotalTax, null,$dz_Amount_already_paid);
+
+$document->setDocumentSellerCommunication('EM', $dt_ACC_Email);
+$document->setDocumentBuyerCommunication('EM', $dt_recipien_Email);
 
 if($dueDate == '') {
     $document->addDocumentPaymentTerm($dz_Description_payment);
@@ -85,16 +95,17 @@ if($dueDate == '') {
 }
 
 
-	foreach($dt_Json as $key => $value){
-		$document
-		->addNewPosition($value['pos'])
-		->setDocumentPositionProductDetails($value['Bezeichung'], "", "")
-		->setDocumentPositionGrossPrice($value['Netto'])
-		->setDocumentPositionNetPrice($value['Netto'])
-		->setDocumentPositionQuantity($value['Menge'], $value['Einheit'])
-		->addDocumentPositionTax('S', 'VAT', $dz_Tax)
-		->setDocumentPositionLineSummation($value['Netto']);
-	}
+foreach($dt_Json as $key => $value){
+    $document
+    ->addNewPosition($value['pos'])
+    ->setDocumentPositionProductDetails($value['Bezeichung'], "", "")
+    ->setDocumentPositionGrossPrice($value['SumWithoutAllowance'])
+    ->setDocumentPositionNetPrice($value['Netto'])
+    ->setDocumentPositionQuantity($value['Menge'], $value['Einheit'])
+    ->addDocumentPositionTax($dEt_VAT_Type, 'VAT', $dz_Tax)
+    ->setDocumentPositionLineSummation($value['Netto'])
+	->addDocumentPositionAllowanceCharge($value['AllowanceTotal'], true, $value['Allowance'],$value['SumWithoutAllowance'], 'ADR',$value[ 'Allowance_Text']);
+}
 
 header('Content-Type: application/xml');
 header('Content-Length: '.strlen( $document ));
